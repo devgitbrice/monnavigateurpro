@@ -250,6 +250,7 @@ struct TodoListView: View {
     }
 
     private func deleteTask(_ todo: TodoItem) {
+        NSSound(named: .init("Purr"))?.play()
         modelContext.delete(todo)
     }
 
