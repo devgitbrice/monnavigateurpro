@@ -1,8 +1,10 @@
 import SwiftUI
+import AppKit
 
 struct NavigationBar: View {
     @Bindable var viewModel: BrowserViewModel
     @Environment(\.modelContext) private var modelContext
+    @State private var showBookmarkAdded: Bool = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -103,13 +105,39 @@ struct NavigationBar: View {
 
             // Action buttons
             HStack(spacing: 4) {
-                Button(action: { viewModel.addBookmark(modelContext: modelContext) }) {
-                    Image(systemName: "star.fill")
+                Button(action: {
+                    viewModel.addBookmark(modelContext: modelContext)
+                    NSSound(named: .init("Tink"))?.play()
+                    withAnimation(.spring(duration: 0.3)) {
+                        showBookmarkAdded = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showBookmarkAdded = false
+                        }
+                    }
+                }) {
+                    Image(systemName: "star")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.yellow)
                 }
                 .buttonStyle(.borderless)
                 .help("Ajouter aux favoris")
+                .overlay(alignment: .top) {
+                    if showBookmarkAdded {
+                        Text("Favori ajouté")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(.green)
+                                    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                            )
+                            .offset(y: -28)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                }
 
                 Button(action: { viewModel.isShowingFindInPage.toggle() }) {
                     Image(systemName: "doc.text.magnifyingglass")
@@ -152,11 +180,17 @@ struct NavigationBar: View {
                 .help("Téléchargements")
 
                 Button(action: { viewModel.isShowingSidebar.toggle() }) {
-                    Image(systemName: "sidebar.right")
-                        .font(.system(size: 13, weight: .medium))
+                    ZStack {
+                        Circle()
+                            .fill(.yellow)
+                            .frame(width: 18, height: 18)
+                        Image(systemName: "sidebar.right")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
                 }
                 .buttonStyle(.borderless)
-                .help("Panneau latéral")
+                .help("Favoris & Historique")
 
                 Button(action: { viewModel.togglePrivateMode() }) {
                     Image(systemName: viewModel.isPrivateMode ? "eye.slash.fill" : "eye.slash")
