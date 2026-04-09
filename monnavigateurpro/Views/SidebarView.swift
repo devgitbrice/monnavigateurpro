@@ -110,7 +110,7 @@ struct BookmarkListView: View {
                         .draggable(section.id.uuidString) {
                             Text(section.name)
                                 .padding(6)
-                                .background(RoundedRectangle(cornerRadius: 6).fill(Color(.controlBackgroundColor)))
+                                .background(RoundedRectangle(cornerRadius: 6).fill(Color.platformControlBackground))
                                 .opacity(0.8)
                         }
                         .dropDestination(for: String.self) { items, _ in
@@ -161,7 +161,9 @@ struct BookmarkListView: View {
                         if !trimmed.isEmpty { bookmark.title = trimmed }
                         editingBookmarkID = nil
                     }
+                    #if os(macOS)
                     .onExitCommand { editingBookmarkID = nil }
+                    #endif
 
                 Button(action: {
                     let trimmed = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -260,7 +262,9 @@ struct SectionHeaderView: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 11, weight: .semibold))
                     .onSubmit { onEndEdit() }
+                    #if os(macOS)
                     .onExitCommand { onEndEdit() }
+                    #endif
 
                 Button(action: onEndEdit) {
                     Image(systemName: "checkmark.circle.fill")

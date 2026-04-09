@@ -47,7 +47,7 @@ struct ChatSidebarView: View {
                             RoundedRectangle(cornerRadius: 6)
                                 .fill(viewModel.selectedAIModel == model
                                       ? model.color.opacity(0.2)
-                                      : Color(.controlBackgroundColor))
+                                      : Color.platformControlBackground)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6)
@@ -178,10 +178,10 @@ struct ChatSidebarView: View {
             .padding(10)
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(.textBackgroundColor))
+                    .fill(Color.platformTextBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color(.separatorColor), lineWidth: 0.5)
+                            .stroke(Color.platformSeparator, lineWidth: 0.5)
                     )
             )
             .padding(8)
@@ -237,7 +237,7 @@ struct ChatBubbleView: View {
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(isUser ? accentColor : Color(.controlBackgroundColor))
+                        .fill(isUser ? accentColor : Color.platformControlBackground)
                 )
 
                 Text(message.timestamp, style: .time)

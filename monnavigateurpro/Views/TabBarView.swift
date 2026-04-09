@@ -35,7 +35,7 @@ struct TabBarView: View {
         .background(
             viewModel.isPrivateMode
                 ? Color.purple.opacity(0.1)
-                : Color(.windowBackgroundColor)
+                : Color.platformWindowBackground
         )
     }
 }
@@ -77,7 +77,7 @@ struct TabItemView: View {
                         .frame(width: 14, height: 14)
                         .background(
                             Circle()
-                                .fill(Color(.separatorColor).opacity(0.5))
+                                .fill(Color.platformSeparator.opacity(0.5))
                         )
                 }
                 .buttonStyle(.borderless)
@@ -88,11 +88,11 @@ struct TabItemView: View {
         .frame(minWidth: 100, maxWidth: 200)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isActive ? Color(.controlBackgroundColor) : Color.clear)
+                .fill(isActive ? Color.platformControlBackground : Color.clear)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(isActive ? Color(.separatorColor).opacity(0.5) : Color.clear, lineWidth: 0.5)
+                .stroke(isActive ? Color.platformSeparator.opacity(0.5) : Color.clear, lineWidth: 0.5)
         )
         .onTapGesture(perform: onSelect)
         .onHover { hovering in

@@ -1,6 +1,7 @@
 import SwiftUI
 import WebKit
 
+#if os(macOS)
 struct WebViewWrapper: NSViewRepresentable {
     let tab: Tab
     let onNavigationChange: (URL?, String?) -> Void
@@ -16,7 +17,27 @@ struct WebViewWrapper: NSViewRepresentable {
     func makeCoordinator() -> Coordinator {
         Coordinator(tab: tab, onNavigationChange: onNavigationChange)
     }
+}
+#else
+struct WebViewWrapper: UIViewRepresentable {
+    let tab: Tab
+    let onNavigationChange: (URL?, String?) -> Void
 
+    func makeUIView(context: Context) -> WKWebView {
+        tab.webView.navigationDelegate = context.coordinator
+        tab.webView.uiDelegate = context.coordinator
+        return tab.webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(tab: tab, onNavigationChange: onNavigationChange)
+    }
+}
+#endif
+
+extension WebViewWrapper {
     class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         let tab: Tab
         let onNavigationChange: (URL?, String?) -> Void
@@ -75,8 +96,6 @@ struct WebViewWrapper: NSViewRepresentable {
             }
         }
 
-        // MARK: - WKNavigationDelegate
-
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
             tab.isLoading = true
         }
@@ -101,8 +120,6 @@ struct WebViewWrapper: NSViewRepresentable {
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
         }
-
-        // MARK: - WKUIDelegate
 
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
             if navigationAction.targetFrame == nil {

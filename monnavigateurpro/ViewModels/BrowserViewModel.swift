@@ -2,6 +2,9 @@ import Foundation
 import SwiftData
 import WebKit
 import Combine
+#if canImport(UIKit)
+import UIKit
+#endif
 
 @Observable
 class BrowserViewModel {
@@ -92,6 +95,7 @@ class BrowserViewModel {
     func stopLoading() { activeTab?.stopLoading() }
 
     func printPage() {
+        #if os(macOS)
         guard let webView = activeTab?.webView else { return }
         let printInfo = NSPrintInfo.shared
         printInfo.isHorizontallyCentered = true
@@ -104,6 +108,13 @@ class BrowserViewModel {
         printOperation.showsPrintPanel = true
         printOperation.showsProgressPanel = true
         printOperation.run()
+        #else
+        // iOS: use share sheet / print interaction controller
+        guard let webView = activeTab?.webView else { return }
+        let printController = UIPrintInteractionController.shared
+        printController.printFormatter = webView.viewPrintFormatter()
+        printController.present(animated: true)
+        #endif
     }
 
     func goHome(modelContext: ModelContext) {

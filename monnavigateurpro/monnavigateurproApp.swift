@@ -24,6 +24,7 @@ struct monnavigateurproApp: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        #if os(macOS)
         .windowStyle(.automatic)
         .defaultSize(width: 1200, height: 800)
         .commands {
@@ -39,6 +40,7 @@ struct monnavigateurproApp: App {
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             }
         }
+        #endif
     }
 }
 

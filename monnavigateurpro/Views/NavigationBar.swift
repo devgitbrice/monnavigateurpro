@@ -1,5 +1,4 @@
 import SwiftUI
-import AppKit
 
 struct NavigationBar: View {
     @Bindable var viewModel: BrowserViewModel
@@ -82,10 +81,10 @@ struct NavigationBar: View {
             .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(.textBackgroundColor))
+                    .fill(Color.platformTextBackground)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color(.separatorColor), lineWidth: 0.5)
+                            .stroke(Color.platformSeparator, lineWidth: 0.5)
                     )
             )
 
@@ -107,7 +106,7 @@ struct NavigationBar: View {
             HStack(spacing: 4) {
                 Button(action: {
                     viewModel.addBookmark(modelContext: modelContext)
-                    NSSound(named: .init("Tink"))?.play()
+                    SoundPlayer.playTink()
                     withAnimation(.spring(duration: 0.3)) {
                         showBookmarkAdded = true
                     }

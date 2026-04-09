@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import AppKit
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -157,7 +156,7 @@ struct TodoListView: View {
         }
 
         // Sound
-        NSSound(named: .init("Glass"))?.play()
+        SoundPlayer.playGlass()
 
         // After short delay: delete and move to next
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
@@ -391,7 +390,7 @@ struct TodoListView: View {
     }
 
     private func deleteTask(_ todo: TodoItem) {
-        NSSound(named: .init("Purr"))?.play()
+        SoundPlayer.playPurr()
         modelContext.delete(todo)
     }
 
@@ -454,9 +453,11 @@ struct TodoRowView: View {
                         }
                         isEditing = false
                     }
+                    #if os(macOS)
                     .onExitCommand {
                         isEditing = false
                     }
+                    #endif
             } else {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(todo.title)
@@ -483,8 +484,7 @@ struct TodoRowView: View {
             if isHovering && !isEditing {
                 // Copy button
                 Button(action: {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(todo.title, forType: .string)
+                    ClipboardHelper.copy(todo.title)
                 }) {
                     Image(systemName: "doc.on.doc")
                         .font(.system(size: 10))
@@ -516,7 +516,7 @@ struct TodoRowView: View {
         .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isHovering ? Color(.controlBackgroundColor) : Color.clear)
+                .fill(isHovering ? Color.platformControlBackground : Color.clear)
         )
         .onHover { hovering in
             isHovering = hovering

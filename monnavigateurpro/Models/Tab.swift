@@ -1,5 +1,6 @@
 import Foundation
 import WebKit
+import SwiftUI
 
 @Observable
 class Tab: Identifiable {
@@ -10,7 +11,7 @@ class Tab: Identifiable {
     var canGoBack: Bool = false
     var canGoForward: Bool = false
     var estimatedProgress: Double = 0.0
-    var favicon: NSImage?
+    var favicon: PlatformImage?
     let webView: WKWebView
     var isPrivate: Bool
 

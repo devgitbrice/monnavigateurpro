@@ -73,7 +73,9 @@ struct ContentView: View {
                 }
             }
         }
+        #if os(macOS)
         .frame(minWidth: 900, minHeight: 600)
+        #endif
         .sheet(isPresented: $viewModel.isShowingSettings) {
             SettingsView(viewModel: viewModel)
         }
@@ -86,14 +88,13 @@ struct ContentView: View {
                     .transition(.opacity)
             }
         }
+        #if os(macOS)
         .toolbar(.hidden)
         .background {
-            // Keyboard shortcut handlers
             Group {
                 Button("") { viewModel.createNewTab() }
                     .keyboardShortcut("t", modifiers: .command)
                     .hidden()
-
                 Button("") {
                     if let tab = viewModel.activeTab {
                         viewModel.closeTab(tab)
@@ -101,46 +102,36 @@ struct ContentView: View {
                 }
                 .keyboardShortcut("w", modifiers: .command)
                 .hidden()
-
                 Button("") { viewModel.reload() }
                     .keyboardShortcut("r", modifiers: .command)
                     .hidden()
-
                 Button("") { viewModel.printPage() }
                     .keyboardShortcut("p", modifiers: .command)
                     .hidden()
-
                 Button("") { viewModel.isShowingFindInPage.toggle() }
                     .keyboardShortcut("f", modifiers: .command)
                     .hidden()
-
-                Button("") {
-                    viewModel.addressBarText = ""
-                }
-                .keyboardShortcut("l", modifiers: .command)
-                .hidden()
-
+                Button("") { viewModel.addressBarText = "" }
+                    .keyboardShortcut("l", modifiers: .command)
+                    .hidden()
                 Button("") { viewModel.goBack() }
                     .keyboardShortcut("[", modifiers: .command)
                     .hidden()
-
                 Button("") { viewModel.goForward() }
                     .keyboardShortcut("]", modifiers: .command)
                     .hidden()
-
                 Button("") { viewModel.addBookmark(modelContext: modelContext) }
                     .keyboardShortcut("d", modifiers: .command)
                     .hidden()
-
                 Button("") { viewModel.isShowingSidebar.toggle() }
                     .keyboardShortcut("s", modifiers: [.command, .shift])
                     .hidden()
-
                 Button("") { viewModel.togglePrivateMode() }
                     .keyboardShortcut("n", modifiers: [.command, .shift])
                     .hidden()
             }
         }
+        #endif
     }
 }
 
@@ -178,7 +169,7 @@ struct StartPageView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.windowBackgroundColor))
+        .background(Color.platformWindowBackground)
     }
 }
 

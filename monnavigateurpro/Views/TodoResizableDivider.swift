@@ -11,16 +11,15 @@ struct TodoResizableDivider: View {
 
     var body: some View {
         ZStack {
-            // Visible divider line
             Rectangle()
-                .fill(Color(.separatorColor))
+                .fill(Color.platformSeparator)
                 .frame(width: 1)
 
-            // Drag handle (wider invisible hit area)
             Rectangle()
                 .fill(Color.clear)
                 .frame(width: handleWidth)
                 .contentShape(Rectangle())
+                #if os(macOS)
                 .onHover { hovering in
                     isHovering = hovering
                     if hovering || isDragging {
@@ -29,23 +28,24 @@ struct TodoResizableDivider: View {
                         NSCursor.pop()
                     }
                 }
+                #endif
                 .gesture(
                     DragGesture(minimumDistance: 1)
                         .onChanged { value in
                             isDragging = true
-                            // Dragging left = increase width, dragging right = decrease
                             let newWidth = width - value.translation.width
                             width = min(max(newWidth, minWidth), maxWidth)
                         }
                         .onEnded { _ in
                             isDragging = false
+                            #if os(macOS)
                             if !isHovering {
                                 NSCursor.pop()
                             }
+                            #endif
                         }
                 )
 
-            // Visual grip indicator on hover/drag
             if isHovering || isDragging {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(Color.accentColor.opacity(isDragging ? 0.7 : 0.4))
