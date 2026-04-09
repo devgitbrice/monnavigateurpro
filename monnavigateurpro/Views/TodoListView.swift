@@ -206,6 +206,8 @@ struct TodoRowView: View {
     let onFullScreen: () -> Void
 
     @State private var isHovering = false
+    @State private var isEditing = false
+    @State private var editText: String = ""
 
     var body: some View {
         HStack(spacing: 8) {
@@ -222,25 +224,45 @@ struct TodoRowView: View {
             }
             .buttonStyle(.borderless)
 
-            // Title
-            VStack(alignment: .leading, spacing: 2) {
-                Text(todo.title)
+            // Title (editable on double-click)
+            if isEditing {
+                TextField("", text: $editText)
+                    .textFieldStyle(.plain)
                     .font(.system(size: 12, weight: .medium))
-                    .strikethrough(todo.isCompleted)
-                    .foregroundStyle(todo.isCompleted ? .secondary : .primary)
-                    .lineLimit(1)
-
-                if !todo.note.isEmpty {
-                    Text(todo.note)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
+                    .onSubmit {
+                        let trimmed = editText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !trimmed.isEmpty {
+                            todo.title = trimmed
+                        }
+                        isEditing = false
+                    }
+                    .onExitCommand {
+                        isEditing = false
+                    }
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(todo.title)
+                        .font(.system(size: 12, weight: .medium))
+                        .strikethrough(todo.isCompleted)
+                        .foregroundStyle(todo.isCompleted ? .secondary : .primary)
                         .lineLimit(1)
+
+                    if !todo.note.isEmpty {
+                        Text(todo.note)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(1)
+                    }
+                }
+                .onTapGesture(count: 2) {
+                    editText = todo.title
+                    isEditing = true
                 }
             }
 
             Spacer()
 
-            if isHovering {
+            if isHovering && !isEditing {
                 // Fullscreen button
                 Button(action: onFullScreen) {
                     Image(systemName: "arrow.up.left.and.arrow.down.right")
