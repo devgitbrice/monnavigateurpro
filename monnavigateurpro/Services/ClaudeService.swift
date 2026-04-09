@@ -44,9 +44,9 @@ enum AIModel: String, CaseIterable, Identifiable {
 
     var modelID: String {
         switch self {
-        case .chatgpt: return "gpt-5.2"
+        case .chatgpt: return "chatgpt-4o-latest"
         case .gemini: return "gemini-3.1-pro-preview"
-        case .claude: return "claude-sonnet-4-20250514"
+        case .claude: return "claude-sonnet-4-6"
         case .mistral: return "mistral-large-latest"
         }
     }
