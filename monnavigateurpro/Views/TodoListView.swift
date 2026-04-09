@@ -114,7 +114,7 @@ struct TodoListView: View {
                 }
             }
         }
-        .frame(width: 300, height: 450)
+        .frame(maxHeight: .infinity)
     }
 
     private func addTask() {

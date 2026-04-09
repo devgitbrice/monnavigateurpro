@@ -15,6 +15,7 @@ class BrowserViewModel {
     var isShowingTodoList: Bool = false
     var isShowingTodoFullScreen: Bool = false
     var todoFullScreenIndex: Int = 0
+    var todoSidebarWidth: CGFloat = 300
     var findText: String = ""
     var isPrivateMode: Bool = false
     var sidebarSection: SidebarSection = .bookmarks

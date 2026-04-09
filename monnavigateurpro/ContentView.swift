@@ -45,10 +45,18 @@ struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                // Sidebar
+                // Sidebar (bookmarks/history)
                 if viewModel.isShowingSidebar {
                     Divider()
                     SidebarView(viewModel: viewModel)
+                }
+
+                // Todo sidebar with resizable handle
+                if viewModel.isShowingTodoList {
+                    TodoResizableDivider(width: $viewModel.todoSidebarWidth)
+                    TodoListView(viewModel: viewModel)
+                        .frame(width: viewModel.todoSidebarWidth)
+                        .background(.bar)
                 }
             }
         }
@@ -58,9 +66,6 @@ struct ContentView: View {
         }
         .popover(isPresented: $viewModel.isShowingDownloads, arrowEdge: .bottom) {
             DownloadsView(viewModel: viewModel)
-        }
-        .popover(isPresented: $viewModel.isShowingTodoList, arrowEdge: .bottom) {
-            TodoListView(viewModel: viewModel)
         }
         .overlay {
             if viewModel.isShowingTodoFullScreen {
