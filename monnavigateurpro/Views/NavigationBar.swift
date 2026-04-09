@@ -104,8 +104,9 @@ struct NavigationBar: View {
             // Action buttons
             HStack(spacing: 4) {
                 Button(action: { viewModel.addBookmark(modelContext: modelContext) }) {
-                    Image(systemName: "star")
+                    Image(systemName: "star.fill")
                         .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.yellow)
                 }
                 .buttonStyle(.borderless)
                 .help("Ajouter aux favoris")
