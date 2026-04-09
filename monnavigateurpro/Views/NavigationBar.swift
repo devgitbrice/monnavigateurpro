@@ -130,6 +130,19 @@ struct NavigationBar: View {
                 .buttonStyle(.borderless)
                 .help("Tâches")
 
+                Button(action: { viewModel.isShowingChatSidebar.toggle() }) {
+                    ZStack {
+                        Circle()
+                            .fill(.purple)
+                            .frame(width: 18, height: 18)
+                        Image(systemName: "bubble.left.fill")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .buttonStyle(.borderless)
+                .help("Claude AI")
+
                 Button(action: { viewModel.isShowingDownloads.toggle() }) {
                     Image(systemName: "arrow.down.circle")
                         .font(.system(size: 13, weight: .medium))

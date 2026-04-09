@@ -58,6 +58,14 @@ struct ContentView: View {
                         .frame(width: viewModel.todoSidebarWidth)
                         .background(.bar)
                 }
+
+                // Claude chat sidebar with resizable handle
+                if viewModel.isShowingChatSidebar {
+                    TodoResizableDivider(width: $viewModel.chatSidebarWidth)
+                    ChatSidebarView(viewModel: viewModel)
+                        .frame(width: viewModel.chatSidebarWidth)
+                        .background(.bar)
+                }
             }
         }
         .frame(minWidth: 900, minHeight: 600)

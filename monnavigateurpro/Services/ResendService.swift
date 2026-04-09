@@ -2,7 +2,6 @@ import Foundation
 
 struct ResendService {
     static func sendNewTaskEmail(taskTitle: String) {
-        // .env first, then fallback to Settings (UserDefaults)
         let apiKey = EnvReader.value(forKey: "RESEND_API_KEY")
             ?? UserDefaults.standard.string(forKey: "resendAPIKey")
             ?? ""
@@ -13,10 +12,20 @@ struct ResendService {
             ?? UserDefaults.standard.string(forKey: "resendToEmail")
             ?? ""
 
-        guard !apiKey.isEmpty, !fromEmail.isEmpty, !toEmail.isEmpty else {
-            print("[Resend] Configuration manquante. Remplissez le .env ou les paramètres.")
+        guard !apiKey.isEmpty else {
+            print("[Resend] RESEND_API_KEY manquante.")
             return
         }
+        guard !fromEmail.isEmpty else {
+            print("[Resend] RESEND_FROM_EMAIL manquante.")
+            return
+        }
+        guard !toEmail.isEmpty else {
+            print("[Resend] CONTACT_TO_EMAIL manquant.")
+            return
+        }
+
+        print("[Resend] Envoi d'email à \(toEmail) depuis \(fromEmail)...")
 
         let url = URL(string: "https://api.resend.com/emails")!
         var request = URLRequest(url: url)
@@ -54,15 +63,15 @@ struct ResendService {
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("[Resend] Erreur: \(error.localizedDescription)")
+                print("[Resend] Erreur réseau: \(error.localizedDescription)")
                 return
             }
             if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 {
-                    print("[Resend] Email envoyé pour: \(taskTitle)")
+                let responseBody = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+                if (200...299).contains(httpResponse.statusCode) {
+                    print("[Resend] Email envoyé avec succès! (\(httpResponse.statusCode))")
                 } else {
-                    let body = data.flatMap { String(data: $0, encoding: .utf8) } ?? "?"
-                    print("[Resend] Erreur \(httpResponse.statusCode): \(body)")
+                    print("[Resend] Erreur HTTP \(httpResponse.statusCode): \(responseBody)")
                 }
             }
         }.resume()

@@ -16,6 +16,11 @@ class BrowserViewModel {
     var isShowingTodoFullScreen: Bool = false
     var todoFullScreenIndex: Int = 0
     var todoSidebarWidth: CGFloat = 300
+    var isShowingChatSidebar: Bool = false
+    var chatSidebarWidth: CGFloat = 320
+    var chatMessages: [ChatMessage] = []
+    var isChatLoading: Bool = false
+    var chatError: String? = nil
     var findText: String = ""
     var isPrivateMode: Bool = false
     var sidebarSection: SidebarSection = .bookmarks
