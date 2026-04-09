@@ -1,10 +1,3 @@
-//
-//  monnavigateurproApp.swift
-//  monnavigateurpro
-//
-//  Created by BriceM4 on 09/04/2026.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,14 +5,15 @@ import SwiftData
 struct monnavigateurproApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Bookmark.self,
+            HistoryEntry.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("Impossible de créer le ModelContainer: \(error)")
         }
     }()
 
@@ -28,5 +22,25 @@ struct monnavigateurproApp: App {
             ContentView()
         }
         .modelContainer(sharedModelContainer)
+        .windowStyle(.automatic)
+        .defaultSize(width: 1200, height: 800)
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("Nouvel onglet") {
+                    NotificationCenter.default.post(name: .newTab, object: nil)
+                }
+                .keyboardShortcut("t", modifiers: .command)
+
+                Button("Nouvelle fenêtre privée") {
+                    NotificationCenter.default.post(name: .newPrivateWindow, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+            }
+        }
     }
+}
+
+extension Notification.Name {
+    static let newTab = Notification.Name("newTab")
+    static let newPrivateWindow = Notification.Name("newPrivateWindow")
 }
