@@ -139,6 +139,13 @@ struct NavigationBar: View {
                     }
                 }
 
+                Button(action: { viewModel.printPage() }) {
+                    Image(systemName: "printer")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .buttonStyle(.borderless)
+                .help("Imprimer / PDF (⌘P)")
+
                 Button(action: { viewModel.isShowingFindInPage.toggle() }) {
                     Image(systemName: "doc.text.magnifyingglass")
                         .font(.system(size: 13, weight: .medium))

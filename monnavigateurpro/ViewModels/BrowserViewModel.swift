@@ -91,6 +91,21 @@ class BrowserViewModel {
     func reload() { activeTab?.reload() }
     func stopLoading() { activeTab?.stopLoading() }
 
+    func printPage() {
+        guard let webView = activeTab?.webView else { return }
+        let printInfo = NSPrintInfo.shared
+        printInfo.isHorizontallyCentered = true
+        printInfo.isVerticallyCentered = false
+        printInfo.topMargin = 20
+        printInfo.bottomMargin = 20
+        printInfo.leftMargin = 20
+        printInfo.rightMargin = 20
+        let printOperation = webView.printOperation(with: printInfo)
+        printOperation.showsPrintPanel = true
+        printOperation.showsProgressPanel = true
+        printOperation.run()
+    }
+
     func goHome(modelContext: ModelContext) {
         if let url = URL(string: homepage) {
             activeTab?.loadURL(url)

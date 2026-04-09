@@ -106,6 +106,10 @@ struct ContentView: View {
                     .keyboardShortcut("r", modifiers: .command)
                     .hidden()
 
+                Button("") { viewModel.printPage() }
+                    .keyboardShortcut("p", modifiers: .command)
+                    .hidden()
+
                 Button("") { viewModel.isShowingFindInPage.toggle() }
                     .keyboardShortcut("f", modifiers: .command)
                     .hidden()
