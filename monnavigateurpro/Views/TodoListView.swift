@@ -7,6 +7,7 @@ struct TodoListView: View {
     @Bindable var viewModel: BrowserViewModel
     @State private var newTaskTitle: String = ""
     @State private var draggingItem: TodoItem?
+    @State private var showSentConfirmation: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,24 +25,44 @@ struct TodoListView: View {
             }
             .padding(12)
 
-            // Send All button
+            // Send All button + confirmation
             if !todos.isEmpty {
-                Button(action: { sendAllTasks() }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "envelope.fill")
-                            .font(.system(size: 11))
-                        Text("Send All")
-                            .font(.system(size: 12, weight: .semibold))
+                ZStack {
+                    Button(action: { sendAllTasks() }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "envelope.fill")
+                                .font(.system(size: 11))
+                            Text("Send All")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.blue)
+                        )
                     }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(.blue)
-                    )
+                    .buttonStyle(.borderless)
+
+                    if showSentConfirmation {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                            Text("Envoyé !")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(.green)
+                                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                        )
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                 }
-                .buttonStyle(.borderless)
                 .padding(.horizontal, 12)
                 .padding(.bottom, 8)
             }
@@ -142,6 +163,14 @@ struct TodoListView: View {
     private func sendAllTasks() {
         let tasks = todos.map { (title: $0.title, isCompleted: $0.isCompleted) }
         ResendService.sendAllTasks(tasks)
+        withAnimation(.spring(duration: 0.3)) {
+            showSentConfirmation = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                showSentConfirmation = false
+            }
+        }
     }
 
     private func addTask() {
