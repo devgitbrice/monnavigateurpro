@@ -18,6 +18,7 @@ class BrowserViewModel {
     var todoSidebarWidth: CGFloat = 300
     var isShowingChatSidebar: Bool = false
     var chatSidebarWidth: CGFloat = 320
+    var selectedAIModel: AIModel = .claude
     var chatMessages: [ChatMessage] = []
     var isChatLoading: Bool = false
     var chatError: String? = nil

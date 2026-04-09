@@ -10,9 +10,9 @@ struct ChatSidebarView: View {
             // Header
             HStack {
                 Circle()
-                    .fill(.purple)
+                    .fill(viewModel.selectedAIModel.color)
                     .frame(width: 10, height: 10)
-                Text("Claude")
+                Text("Chat AI")
                     .font(.headline)
                 Spacer()
 
@@ -27,15 +27,53 @@ struct ChatSidebarView: View {
             }
             .padding(12)
 
+            // Model selector
+            HStack(spacing: 4) {
+                ForEach(AIModel.allCases) { model in
+                    Button(action: {
+                        viewModel.selectedAIModel = model
+                        viewModel.chatMessages.removeAll()
+                        viewModel.chatError = nil
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: model.icon)
+                                .font(.system(size: 9))
+                            Text(model.rawValue)
+                                .font(.system(size: 9, weight: .medium))
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(viewModel.selectedAIModel == model
+                                      ? model.color.opacity(0.2)
+                                      : Color(.controlBackgroundColor))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(viewModel.selectedAIModel == model
+                                        ? model.color.opacity(0.5)
+                                        : Color.clear, lineWidth: 1)
+                        )
+                        .foregroundStyle(viewModel.selectedAIModel == model
+                                         ? model.color
+                                         : .secondary)
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+
             Divider()
 
             // Messages
             if viewModel.chatMessages.isEmpty {
                 VStack(spacing: 12) {
-                    Image(systemName: "bubble.left.and.bubble.right")
+                    Image(systemName: viewModel.selectedAIModel.icon)
                         .font(.system(size: 36))
-                        .foregroundStyle(.purple.opacity(0.5))
-                    Text("Assistant Claude")
+                        .foregroundStyle(viewModel.selectedAIModel.color.opacity(0.5))
+                    Text(viewModel.selectedAIModel.rawValue)
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                     Text("Posez une question pour commencer")
@@ -48,7 +86,7 @@ struct ChatSidebarView: View {
                     ScrollView {
                         LazyVStack(spacing: 8) {
                             ForEach(viewModel.chatMessages) { message in
-                                ChatBubbleView(message: message)
+                                ChatBubbleView(message: message, accentColor: viewModel.selectedAIModel.color)
                                     .id(message.id)
                             }
 
@@ -56,7 +94,7 @@ struct ChatSidebarView: View {
                                 HStack(spacing: 6) {
                                     ProgressView()
                                         .scaleEffect(0.5)
-                                    Text("Claude réfléchit...")
+                                    Text("\(viewModel.selectedAIModel.rawValue) réfléchit...")
                                         .font(.system(size: 11))
                                         .foregroundStyle(.secondary)
                                     Spacer()
@@ -125,7 +163,7 @@ struct ChatSidebarView: View {
                         .foregroundStyle(
                             inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isChatLoading
                             ? Color.gray
-                            : Color.purple
+                            : viewModel.selectedAIModel.color
                         )
                 }
                 .buttonStyle(.borderless)
@@ -155,7 +193,8 @@ struct ChatSidebarView: View {
         viewModel.isChatLoading = true
         viewModel.chatError = nil
 
-        ClaudeService.sendMessage(
+        AIService.sendMessage(
+            model: viewModel.selectedAIModel,
             messages: viewModel.chatMessages,
             onResponse: { response in
                 let assistantMessage = ChatMessage(role: "assistant", content: response)
@@ -172,6 +211,7 @@ struct ChatSidebarView: View {
 
 struct ChatBubbleView: View {
     let message: ChatMessage
+    var accentColor: Color = .purple
 
     private var isUser: Bool { message.role == "user" }
 
@@ -187,7 +227,7 @@ struct ChatBubbleView: View {
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(isUser ? Color.purple : Color(.controlBackgroundColor))
+                            .fill(isUser ? accentColor : Color(.controlBackgroundColor))
                     )
                     .foregroundStyle(isUser ? .white : .primary)
 
