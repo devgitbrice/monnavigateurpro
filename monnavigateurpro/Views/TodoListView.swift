@@ -122,6 +122,7 @@ struct TodoListView: View {
         guard !title.isEmpty else { return }
         let todo = TodoItem(title: title, sortOrder: todos.count)
         modelContext.insert(todo)
+        ResendService.sendNewTaskEmail(taskTitle: title)
         newTaskTitle = ""
     }
 

@@ -4,6 +4,10 @@ struct SettingsView: View {
     @Bindable var viewModel: BrowserViewModel
     @Environment(\.dismiss) private var dismiss
 
+    @AppStorage("resendAPIKey") private var resendAPIKey: String = ""
+    @AppStorage("resendFromEmail") private var resendFromEmail: String = ""
+    @AppStorage("resendToEmail") private var resendToEmail: String = "contact@bricematter.com"
+
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -38,6 +42,42 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                }
+
+                Section {
+                    HStack {
+                        Text("Clef API Resend")
+                        Spacer()
+                        SecureField("re_xxxxxxxxx", text: $resendAPIKey)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 300)
+                    }
+
+                    HStack {
+                        Text("Email expéditeur")
+                        Spacer()
+                        TextField("noreply@votredomaine.com", text: $resendFromEmail)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 300)
+                    }
+
+                    HStack {
+                        Text("Email destinataire")
+                        Spacer()
+                        TextField("contact@example.com", text: $resendToEmail)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 300)
+                    }
+
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(.blue)
+                        Text("Un email est envoyé à chaque nouvelle tâche ajoutée")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Label("Notifications Email (Resend)", systemImage: "envelope.fill")
                 }
 
                 Section("Confidentialité") {
@@ -86,6 +126,6 @@ struct SettingsView: View {
             }
             .formStyle(.grouped)
         }
-        .frame(width: 500, height: 420)
+        .frame(width: 500, height: 560)
     }
 }
