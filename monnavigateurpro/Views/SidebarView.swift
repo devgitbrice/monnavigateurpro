@@ -154,7 +154,7 @@ struct BookmarkListView: View {
                     .foregroundStyle(.yellow)
 
                 TextField("Titre", text: $editTitle)
-                    .textFieldStyle(.plain)
+                    .textFieldStyle(.roundedBorder)
                     .font(.system(size: 12, weight: .medium))
                     .onSubmit {
                         let trimmed = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -185,6 +185,7 @@ struct BookmarkListView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(bookmark.title)
                             .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.primary)
                             .lineLimit(1)
                         Text(bookmark.url)
                             .font(.system(size: 10))
@@ -259,7 +260,7 @@ struct SectionHeaderView: View {
                     .foregroundStyle(.orange)
 
                 TextField("Nom", text: $editName)
-                    .textFieldStyle(.plain)
+                    .textFieldStyle(.roundedBorder)
                     .font(.system(size: 11, weight: .semibold))
                     .onSubmit { onEndEdit() }
                     #if os(macOS)
@@ -285,7 +286,7 @@ struct SectionHeaderView: View {
 
                 Text(section.name)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .textCase(.uppercase)
 
                 Spacer()
@@ -345,6 +346,7 @@ struct HistoryListView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(entry.title)
                                         .font(.system(size: 12, weight: .medium))
+                                        .foregroundStyle(.primary)
                                         .lineLimit(1)
                                     HStack {
                                         Text(entry.url)
