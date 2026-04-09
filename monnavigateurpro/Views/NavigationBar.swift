@@ -117,6 +117,19 @@ struct NavigationBar: View {
                 .buttonStyle(.borderless)
                 .help("Rechercher dans la page")
 
+                Button(action: { viewModel.isShowingTodoList.toggle() }) {
+                    ZStack {
+                        Circle()
+                            .fill(.green)
+                            .frame(width: 18, height: 18)
+                        Image(systemName: "checklist")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .buttonStyle(.borderless)
+                .help("Tâches")
+
                 Button(action: { viewModel.isShowingDownloads.toggle() }) {
                     Image(systemName: "arrow.down.circle")
                         .font(.system(size: 13, weight: .medium))

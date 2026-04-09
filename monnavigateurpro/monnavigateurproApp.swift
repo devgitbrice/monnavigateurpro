@@ -7,6 +7,7 @@ struct monnavigateurproApp: App {
         let schema = Schema([
             Bookmark.self,
             HistoryEntry.self,
+            TodoItem.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

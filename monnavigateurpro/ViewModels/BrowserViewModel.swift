@@ -12,6 +12,9 @@ class BrowserViewModel {
     var isShowingSettings: Bool = false
     var isShowingDownloads: Bool = false
     var isShowingFindInPage: Bool = false
+    var isShowingTodoList: Bool = false
+    var isShowingTodoFullScreen: Bool = false
+    var todoFullScreenIndex: Int = 0
     var findText: String = ""
     var isPrivateMode: Bool = false
     var sidebarSection: SidebarSection = .bookmarks

@@ -59,6 +59,15 @@ struct ContentView: View {
         .popover(isPresented: $viewModel.isShowingDownloads, arrowEdge: .bottom) {
             DownloadsView(viewModel: viewModel)
         }
+        .popover(isPresented: $viewModel.isShowingTodoList, arrowEdge: .bottom) {
+            TodoListView(viewModel: viewModel)
+        }
+        .overlay {
+            if viewModel.isShowingTodoFullScreen {
+                TodoFullScreenView(viewModel: viewModel)
+                    .transition(.opacity)
+            }
+        }
         .toolbar(.hidden)
         .background {
             // Keyboard shortcut handlers
@@ -178,5 +187,5 @@ struct QuickLinkButton: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Bookmark.self, HistoryEntry.self], inMemory: true)
+        .modelContainer(for: [Bookmark.self, HistoryEntry.self, TodoItem.self], inMemory: true)
 }
