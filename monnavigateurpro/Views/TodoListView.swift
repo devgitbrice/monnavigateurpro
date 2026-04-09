@@ -100,6 +100,35 @@ struct TodoListView: View {
                     .buttonStyle(.borderless)
                 }
                 .padding(12)
+
+                // Add new task input
+                HStack(spacing: 8) {
+                    TextField("Nouvelle tâche...", text: $newTaskTitle)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(.white.opacity(0.15))
+                        )
+                        .onSubmit {
+                            addTask()
+                        }
+
+                    Button(action: addTask) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.red)
+                            .frame(width: 28, height: 28)
+                            .background(Circle().fill(.white))
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+                .padding(.horizontal, 12)
+
                 Spacer()
 
                 // DONE button at bottom
