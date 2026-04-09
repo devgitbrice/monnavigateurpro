@@ -5,6 +5,7 @@ struct TodoFullScreenView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoItem.sortOrder) private var todos: [TodoItem]
     @Bindable var viewModel: BrowserViewModel
+    @FocusState private var isFocused: Bool
 
     var currentTodo: TodoItem? {
         guard viewModel.todoFullScreenIndex >= 0,
@@ -99,6 +100,10 @@ struct TodoFullScreenView: View {
             }
         }
         .focusable()
+        .focused($isFocused)
+        .onAppear {
+            isFocused = true
+        }
         .onKeyPress(.leftArrow) {
             goToPrevious()
             return .handled
