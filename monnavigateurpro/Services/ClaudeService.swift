@@ -35,7 +35,7 @@ class ClaudeService {
         }
 
         let body: [String: Any] = [
-            "model": "claude-sonnet-4-20250514",
+            "model": "claude-haiku-4-5-20251001",
             "max_tokens": 4096,
             "system": "Tu es un assistant intégré dans MonNavigateurPro, un navigateur web macOS. Tu réponds en français de manière concise et utile. Tu peux aider l'utilisateur avec ses tâches, ses recherches web, et toute question.",
             "messages": apiMessages

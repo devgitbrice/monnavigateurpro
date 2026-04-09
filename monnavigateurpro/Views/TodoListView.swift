@@ -24,6 +24,28 @@ struct TodoListView: View {
             }
             .padding(12)
 
+            // Send All button
+            if !todos.isEmpty {
+                Button(action: { sendAllTasks() }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "envelope.fill")
+                            .font(.system(size: 11))
+                        Text("Send All")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.blue)
+                    )
+                }
+                .buttonStyle(.borderless)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            }
+
             Divider()
 
             // New task input
@@ -117,12 +139,16 @@ struct TodoListView: View {
         .frame(maxHeight: .infinity)
     }
 
+    private func sendAllTasks() {
+        let tasks = todos.map { (title: $0.title, isCompleted: $0.isCompleted) }
+        ResendService.sendAllTasks(tasks)
+    }
+
     private func addTask() {
         let title = newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { return }
         let todo = TodoItem(title: title, sortOrder: todos.count)
         modelContext.insert(todo)
-        ResendService.sendNewTaskEmail(taskTitle: title)
         newTaskTitle = ""
     }
 
