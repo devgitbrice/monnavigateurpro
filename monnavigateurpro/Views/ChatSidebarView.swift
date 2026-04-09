@@ -86,8 +86,14 @@ struct ChatSidebarView: View {
                     ScrollView {
                         LazyVStack(spacing: 8) {
                             ForEach(viewModel.chatMessages) { message in
-                                ChatBubbleView(message: message, accentColor: viewModel.selectedAIModel.color)
-                                    .id(message.id)
+                                ChatBubbleView(
+                                    message: message,
+                                    accentColor: viewModel.selectedAIModel.color,
+                                    onLinkTapped: { url in
+                                        viewModel.createNewTab(url: url)
+                                    }
+                                )
+                                .id(message.id)
                             }
 
                             if viewModel.isChatLoading {
@@ -212,6 +218,7 @@ struct ChatSidebarView: View {
 struct ChatBubbleView: View {
     let message: ChatMessage
     var accentColor: Color = .purple
+    var onLinkTapped: ((URL) -> Void)? = nil
 
     private var isUser: Bool { message.role == "user" }
 
@@ -220,16 +227,18 @@ struct ChatBubbleView: View {
             if isUser { Spacer(minLength: 40) }
 
             VStack(alignment: isUser ? .trailing : .leading, spacing: 4) {
-                Text(message.content)
-                    .font(.system(size: 13))
-                    .textSelection(.enabled)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(isUser ? accentColor : Color(.controlBackgroundColor))
-                    )
-                    .foregroundStyle(isUser ? .white : .primary)
+                LinkedTextView(
+                    text: message.content,
+                    isUser: isUser,
+                    accentColor: accentColor,
+                    onLinkTapped: onLinkTapped
+                )
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(isUser ? accentColor : Color(.controlBackgroundColor))
+                )
 
                 Text(message.timestamp, style: .time)
                     .font(.system(size: 9))
@@ -239,5 +248,83 @@ struct ChatBubbleView: View {
             if !isUser { Spacer(minLength: 40) }
         }
         .padding(.horizontal, 12)
+    }
+}
+
+struct LinkedTextView: View {
+    let text: String
+    let isUser: Bool
+    let accentColor: Color
+    var onLinkTapped: ((URL) -> Void)? = nil
+
+    var body: some View {
+        Text(buildAttributedString())
+            .font(.system(size: 13))
+            .textSelection(.enabled)
+            .tint(isUser ? .white : .blue)
+            .environment(\.openURL, OpenURLAction { url in
+                onLinkTapped?(url)
+                return .handled
+            })
+    }
+
+    private func buildAttributedString() -> AttributedString {
+        let pattern = #"(https?://[^\s]+|www\.[^\s]+|[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+(/[^\s]*)?)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            var attr = AttributedString(text)
+            attr.foregroundColor = isUser ? .white : nil
+            return attr
+        }
+
+        let nsText = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsText.length))
+
+        var result = AttributedString()
+        var lastEnd = 0
+
+        for match in matches {
+            let range = match.range
+
+            // Text before the link
+            if range.location > lastEnd {
+                var before = AttributedString(nsText.substring(with: NSRange(location: lastEnd, length: range.location - lastEnd)))
+                before.foregroundColor = isUser ? .white : nil
+                result += before
+            }
+
+            // The link itself
+            let urlString = nsText.substring(with: range)
+            let fullURL: String
+            if urlString.hasPrefix("http://") || urlString.hasPrefix("https://") {
+                fullURL = urlString
+            } else {
+                fullURL = "https://\(urlString)"
+            }
+
+            var linkAttr = AttributedString(urlString)
+            if let url = URL(string: fullURL) {
+                linkAttr.link = url
+            }
+            linkAttr.underlineStyle = .single
+            linkAttr.foregroundColor = isUser ? .white : .blue
+            result += linkAttr
+
+            lastEnd = range.location + range.length
+        }
+
+        // Remaining text
+        if lastEnd < nsText.length {
+            var remaining = AttributedString(nsText.substring(from: lastEnd))
+            remaining.foregroundColor = isUser ? .white : nil
+            result += remaining
+        }
+
+        if matches.isEmpty {
+            var attr = AttributedString(text)
+            attr.foregroundColor = isUser ? .white : nil
+            return attr
+        }
+
+        return result
     }
 }
