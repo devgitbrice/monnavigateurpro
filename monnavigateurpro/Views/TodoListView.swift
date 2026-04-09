@@ -30,6 +30,11 @@ struct TodoListView: View {
 
     // MARK: - Focus View (red)
 
+    private var focusedIndex: Int? {
+        guard let id = focusedTaskID else { return nil }
+        return todos.firstIndex { $0.id == id }
+    }
+
     private var focusView: some View {
         ZStack {
             Color.red
@@ -43,10 +48,41 @@ struct TodoListView: View {
                     .padding(32)
             }
 
-            // Close button top-right
+            // Top bar: arrows + close
             VStack {
-                HStack {
+                HStack(spacing: 12) {
+                    // Previous
+                    Button(action: goToPreviousFocus) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white.opacity(canGoPrevious ? 0.8 : 0.2))
+                            .frame(width: 32, height: 32)
+                            .background(Circle().fill(.white.opacity(0.15)))
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(!canGoPrevious)
+
+                    // Counter
+                    if let idx = focusedIndex {
+                        Text("\(idx + 1) / \(todos.count)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+
+                    // Next
+                    Button(action: goToNextFocus) {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white.opacity(canGoNext ? 0.8 : 0.2))
+                            .frame(width: 32, height: 32)
+                            .background(Circle().fill(.white.opacity(0.15)))
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(!canGoNext)
+
                     Spacer()
+
+                    // Close
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             focusedTaskID = nil
@@ -60,10 +96,34 @@ struct TodoListView: View {
                             .background(Circle().fill(.white.opacity(0.2)))
                     }
                     .buttonStyle(.borderless)
-                    .padding(12)
                 }
+                .padding(12)
                 Spacer()
             }
+        }
+    }
+
+    private var canGoPrevious: Bool {
+        guard let idx = focusedIndex else { return false }
+        return idx > 0
+    }
+
+    private var canGoNext: Bool {
+        guard let idx = focusedIndex else { return false }
+        return idx < todos.count - 1
+    }
+
+    private func goToPreviousFocus() {
+        guard let idx = focusedIndex, idx > 0 else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            focusedTaskID = todos[idx - 1].id
+        }
+    }
+
+    private func goToNextFocus() {
+        guard let idx = focusedIndex, idx < todos.count - 1 else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            focusedTaskID = todos[idx + 1].id
         }
     }
 
