@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -9,6 +10,7 @@ struct TodoListView: View {
     @State private var draggingItem: TodoItem?
     @State private var showSentConfirmation: Bool = false
     @State private var focusedTaskID: UUID? = nil
+    @State private var doneFlash: Bool = false
 
     private var focusedTask: TodoItem? {
         guard let id = focusedTaskID else { return nil }
@@ -99,6 +101,56 @@ struct TodoListView: View {
                 }
                 .padding(12)
                 Spacer()
+
+                // DONE button at bottom
+                Button(action: markDoneAndNext) {
+                    Text("DONE")
+                        .font(.system(size: 18, weight: .heavy))
+                        .foregroundStyle(.white)
+                        .frame(width: 140, height: 44)
+                        .background(
+                            Capsule()
+                                .fill(doneFlash ? .green : .white.opacity(0.25))
+                        )
+                }
+                .buttonStyle(.borderless)
+                .padding(.bottom, 24)
+            }
+        }
+    }
+
+    private func markDoneAndNext() {
+        guard let task = focusedTask, let idx = focusedIndex else { return }
+
+        // Flash green
+        withAnimation(.easeIn(duration: 0.15)) {
+            doneFlash = true
+        }
+
+        // Sound
+        NSSound(named: .init("Glass"))?.play()
+
+        // After short delay: delete and move to next
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            doneFlash = false
+
+            let nextID: UUID?
+            if todos.count <= 1 {
+                nextID = nil
+            } else if idx < todos.count - 1 {
+                nextID = todos[idx + 1].id
+            } else {
+                nextID = todos[idx - 1].id
+            }
+
+            modelContext.delete(task)
+
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if let nextID {
+                    focusedTaskID = nextID
+                } else {
+                    focusedTaskID = nil
+                }
             }
         }
     }
