@@ -10,5 +10,11 @@
 	<true/>
 	<key>com.apple.security.files.downloads.read-write</key>
 	<true/>
+	<key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
+	<array>
+		<string>/Documents/monnavigateurpro/.env</string>
+		<string>/Desktop/monnavigateurpro/.env</string>
+		<string>/Developer/monnavigateurpro/.env</string>
+	</array>
 </dict>
 </plist>

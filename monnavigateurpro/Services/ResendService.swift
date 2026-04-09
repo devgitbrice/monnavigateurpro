@@ -2,12 +2,19 @@ import Foundation
 
 struct ResendService {
     static func sendNewTaskEmail(taskTitle: String) {
-        let apiKey = UserDefaults.standard.string(forKey: "resendAPIKey") ?? ""
-        let fromEmail = UserDefaults.standard.string(forKey: "resendFromEmail") ?? ""
-        let toEmail = UserDefaults.standard.string(forKey: "resendToEmail") ?? ""
+        // .env first, then fallback to Settings (UserDefaults)
+        let apiKey = EnvReader.value(forKey: "RESEND_API_KEY")
+            ?? UserDefaults.standard.string(forKey: "resendAPIKey")
+            ?? ""
+        let fromEmail = EnvReader.value(forKey: "RESEND_FROM_EMAIL")
+            ?? UserDefaults.standard.string(forKey: "resendFromEmail")
+            ?? ""
+        let toEmail = EnvReader.value(forKey: "CONTACT_TO_EMAIL")
+            ?? UserDefaults.standard.string(forKey: "resendToEmail")
+            ?? ""
 
         guard !apiKey.isEmpty, !fromEmail.isEmpty, !toEmail.isEmpty else {
-            print("[Resend] Configuration manquante. Vérifiez les paramètres.")
+            print("[Resend] Configuration manquante. Remplissez le .env ou les paramètres.")
             return
         }
 
