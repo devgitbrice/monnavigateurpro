@@ -6,6 +6,7 @@ struct monnavigateurproApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Bookmark.self,
+            BookmarkSection.self,
             HistoryEntry.self,
             TodoItem.self,
         ])

@@ -481,6 +481,18 @@ struct TodoRowView: View {
             Spacer()
 
             if isHovering && !isEditing {
+                // Copy button
+                Button(action: {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(todo.title, forType: .string)
+                }) {
+                    Image(systemName: "doc.on.doc")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.borderless)
+                .help("Copier")
+
                 // Fullscreen button
                 Button(action: onFullScreen) {
                     Image(systemName: "arrow.up.left.and.arrow.down.right")

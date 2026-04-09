@@ -15,20 +15,21 @@ struct TabBarView: View {
                             onClose: { viewModel.closeTab(tab) }
                         )
                     }
+
+                    // New tab button right after last tab
+                    Button(action: { viewModel.createNewTab() }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Nouvel onglet")
                 }
                 .padding(.leading, 4)
             }
 
             Spacer()
-
-            Button(action: { viewModel.createNewTab() }) {
-                Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .medium))
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(.borderless)
-            .help("Nouvel onglet")
-            .padding(.trailing, 8)
         }
         .frame(height: 36)
         .background(

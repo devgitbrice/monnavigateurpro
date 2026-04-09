@@ -8,12 +8,14 @@ final class Bookmark {
     var url: String
     var dateAdded: Date
     var folder: String
+    var sectionID: UUID?
 
-    init(title: String, url: String, folder: String = "General") {
+    init(title: String, url: String, folder: String = "General", sectionID: UUID? = nil) {
         self.id = UUID()
         self.title = title
         self.url = url
         self.dateAdded = Date()
         self.folder = folder
+        self.sectionID = sectionID
     }
 }

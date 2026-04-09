@@ -209,5 +209,5 @@ struct QuickLinkButton: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [Bookmark.self, HistoryEntry.self, TodoItem.self], inMemory: true)
+        .modelContainer(for: [Bookmark.self, BookmarkSection.self, HistoryEntry.self, TodoItem.self], inMemory: true)
 }
