@@ -45,6 +45,8 @@ struct BookmarkListView: View {
     let bookmarks: [Bookmark]
     let viewModel: BrowserViewModel
     let modelContext: ModelContext
+    @State private var editingBookmarkID: UUID? = nil
+    @State private var editTitle: String = ""
 
     var body: some View {
         if bookmarks.isEmpty {
@@ -65,35 +67,75 @@ struct BookmarkListView: View {
         } else {
             List {
                 ForEach(bookmarks) { bookmark in
-                    Button(action: { viewModel.openBookmark(bookmark) }) {
+                    if editingBookmarkID == bookmark.id {
                         HStack(spacing: 8) {
                             Image(systemName: "star.fill")
                                 .font(.system(size: 12))
                                 .foregroundStyle(.yellow)
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(bookmark.title)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .lineLimit(1)
-                                Text(bookmark.url)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
+                            TextField("Titre", text: $editTitle)
+                                .textFieldStyle(.plain)
+                                .font(.system(size: 12, weight: .medium))
+                                .onSubmit {
+                                    let trimmed = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+                                    if !trimmed.isEmpty {
+                                        bookmark.title = trimmed
+                                    }
+                                    editingBookmarkID = nil
+                                }
+                                .onExitCommand {
+                                    editingBookmarkID = nil
+                                }
+
+                            Button(action: {
+                                let trimmed = editTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !trimmed.isEmpty {
+                                    bookmark.title = trimmed
+                                }
+                                editingBookmarkID = nil
+                            }) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.green)
                             }
+                            .buttonStyle(.borderless)
                         }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.borderless)
-                    .contextMenu {
-                        Button("Ouvrir") { viewModel.openBookmark(bookmark) }
-                        Button("Ouvrir dans un nouvel onglet") {
-                            if let url = URL(string: bookmark.url) {
-                                viewModel.createNewTab(url: url)
+                    } else {
+                        Button(action: { viewModel.openBookmark(bookmark) }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.yellow)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(bookmark.title)
+                                        .font(.system(size: 12, weight: .medium))
+                                        .lineLimit(1)
+                                    Text(bookmark.url)
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
+                                }
                             }
+                            .contentShape(Rectangle())
                         }
-                        Divider()
-                        Button("Supprimer", role: .destructive) {
-                            viewModel.deleteBookmark(bookmark, modelContext: modelContext)
+                        .buttonStyle(.borderless)
+                        .contextMenu {
+                            Button("Ouvrir") { viewModel.openBookmark(bookmark) }
+                            Button("Ouvrir dans un nouvel onglet") {
+                                if let url = URL(string: bookmark.url) {
+                                    viewModel.createNewTab(url: url)
+                                }
+                            }
+                            Divider()
+                            Button("Modifier") {
+                                editTitle = bookmark.title
+                                editingBookmarkID = bookmark.id
+                            }
+                            Divider()
+                            Button("Supprimer", role: .destructive) {
+                                viewModel.deleteBookmark(bookmark, modelContext: modelContext)
+                            }
                         }
                     }
                 }
