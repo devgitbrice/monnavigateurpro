@@ -28,18 +28,23 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 // Web content
                 ZStack {
-                    if let activeTab = viewModel.activeTab {
-                        WebViewWrapper(tab: activeTab) { url, title in
-                            viewModel.updateAddressBar()
-                            if let url = url, let title = title {
-                                viewModel.addToHistory(
-                                    title: title,
-                                    url: url.absoluteString,
-                                    modelContext: modelContext
-                                )
+                    ForEach(viewModel.tabs) { tab in
+                        if tab.id == viewModel.activeTabID {
+                            WebViewWrapper(tab: tab) { url, title in
+                                viewModel.updateAddressBar()
+                                if let url = url, let title = title {
+                                    viewModel.addToHistory(
+                                        title: title,
+                                        url: url.absoluteString,
+                                        modelContext: modelContext
+                                    )
+                                }
                             }
+                            .id(tab.id)
                         }
-                    } else {
+                    }
+
+                    if viewModel.activeTab == nil {
                         StartPageView(viewModel: viewModel)
                     }
                 }
