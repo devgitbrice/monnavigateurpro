@@ -8,8 +8,68 @@ struct TodoListView: View {
     @State private var newTaskTitle: String = ""
     @State private var draggingItem: TodoItem?
     @State private var showSentConfirmation: Bool = false
+    @State private var focusedTaskID: UUID? = nil
+
+    private var focusedTask: TodoItem? {
+        guard let id = focusedTaskID else { return nil }
+        return todos.first { $0.id == id }
+    }
 
     var body: some View {
+        ZStack {
+            // Normal list view
+            if focusedTaskID == nil {
+                normalListView
+            } else {
+                // Focus mode: red background, single task
+                focusView
+            }
+        }
+        .frame(maxHeight: .infinity)
+    }
+
+    // MARK: - Focus View (red)
+
+    private var focusView: some View {
+        ZStack {
+            Color.red
+                .ignoresSafeArea()
+
+            if let task = focusedTask {
+                Text(task.title)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(32)
+            }
+
+            // Close button top-right
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            focusedTaskID = nil
+                        }
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.8))
+                            .rotationEffect(.degrees(45))
+                            .frame(width: 32, height: 32)
+                            .background(Circle().fill(.white.opacity(0.2)))
+                    }
+                    .buttonStyle(.borderless)
+                    .padding(12)
+                }
+                Spacer()
+            }
+        }
+    }
+
+    // MARK: - Normal List View
+
+    private var normalListView: some View {
         VStack(spacing: 0) {
             // Header
             HStack {
@@ -129,6 +189,11 @@ struct TodoListView: View {
                                         viewModel.todoFullScreenIndex = idx
                                         viewModel.isShowingTodoFullScreen = true
                                     }
+                                },
+                                onFocus: {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        focusedTaskID = todo.id
+                                    }
                                 }
                             )
                             .draggable(todo.id.uuidString) {
@@ -157,7 +222,6 @@ struct TodoListView: View {
                 }
             }
         }
-        .frame(maxHeight: .infinity)
     }
 
     private func sendAllTasks() {
@@ -204,6 +268,7 @@ struct TodoRowView: View {
     let onToggle: () -> Void
     let onDelete: () -> Void
     let onFullScreen: () -> Void
+    var onFocus: (() -> Void)? = nil
 
     @State private var isHovering = false
     @State private var isEditing = false
@@ -211,6 +276,17 @@ struct TodoRowView: View {
 
     var body: some View {
         HStack(spacing: 8) {
+            // Focus cross button
+            Button(action: { onFocus?() }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 14, height: 14)
+                    .background(Circle().fill(.red))
+            }
+            .buttonStyle(.borderless)
+            .help("Focus sur cette tâche")
+
             // Drag handle
             Image(systemName: "line.3.horizontal")
                 .font(.system(size: 10))
