@@ -3,7 +3,7 @@ import SwiftData
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \TodoItem.dateCreated, order: .reverse) private var todos: [TodoItem]
+    @Query(sort: [SortDescriptor(\TodoItem.dateCreated, order: .reverse)]) private var todos: [TodoItem]
     @Bindable var viewModel: BrowserViewModel
     @State private var newTaskTitle: String = ""
     @State private var draggingItem: TodoItem?
@@ -380,7 +380,7 @@ struct TodoListView: View {
     private func addTask() {
         let title = newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty else { return }
-        let todo = TodoItem(title: title, sortOrder: todos.count)
+        let todo = TodoItem(title: title)
         modelContext.insert(todo)
         newTaskTitle = ""
     }
@@ -398,8 +398,10 @@ struct TodoListView: View {
         var reordered = todos
         let item = reordered.remove(at: source)
         reordered.insert(item, at: destination)
+        // Reassign dateCreated in descending order so the query sort matches the new order
+        let now = Date()
         for (index, todo) in reordered.enumerated() {
-            todo.sortOrder = index
+            todo.dateCreated = now.addingTimeInterval(Double(-index))
         }
     }
 }

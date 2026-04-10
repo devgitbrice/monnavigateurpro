@@ -3,7 +3,7 @@ import SwiftData
 
 struct TodoFullScreenView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \TodoItem.dateCreated, order: .reverse) private var todos: [TodoItem]
+    @Query(sort: [SortDescriptor(\TodoItem.dateCreated, order: .reverse)]) private var todos: [TodoItem]
     @Bindable var viewModel: BrowserViewModel
     @FocusState private var isFocused: Bool
 
