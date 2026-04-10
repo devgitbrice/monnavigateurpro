@@ -3,7 +3,7 @@ import SwiftData
 
 struct TodoListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \TodoItem.sortOrder) private var todos: [TodoItem]
+    @Query(sort: \TodoItem.dateCreated, order: .reverse) private var todos: [TodoItem]
     @Bindable var viewModel: BrowserViewModel
     @State private var newTaskTitle: String = ""
     @State private var draggingItem: TodoItem?
