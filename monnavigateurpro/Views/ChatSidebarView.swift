@@ -199,19 +199,23 @@ struct ChatSidebarView: View {
         viewModel.isChatLoading = true
         viewModel.chatError = nil
 
-        AIService.sendMessage(
-            model: viewModel.selectedAIModel,
-            messages: viewModel.chatMessages,
-            onResponse: { response in
-                let assistantMessage = ChatMessage(role: "assistant", content: response)
-                viewModel.chatMessages.append(assistantMessage)
-                viewModel.isChatLoading = false
-            },
-            onError: { error in
-                viewModel.chatError = error
-                viewModel.isChatLoading = false
-            }
-        )
+        // Capture le contenu de la page active puis envoie à l'IA
+        viewModel.getPageContent { pageContext in
+            AIService.sendMessage(
+                model: viewModel.selectedAIModel,
+                messages: viewModel.chatMessages,
+                pageContext: pageContext,
+                onResponse: { response in
+                    let assistantMessage = ChatMessage(role: "assistant", content: response)
+                    viewModel.chatMessages.append(assistantMessage)
+                    viewModel.isChatLoading = false
+                },
+                onError: { error in
+                    viewModel.chatError = error
+                    viewModel.isChatLoading = false
+                }
+            )
+        }
     }
 }
 

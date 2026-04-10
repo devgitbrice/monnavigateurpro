@@ -56,9 +56,23 @@ import SwiftUI
 
 struct AIService {
 
+    private static let baseSystemPrompt = "Tu es un assistant intégré dans MonNavigateurPro. Tu réponds en français de manière concise et utile."
+
+    private static func buildSystemPrompt(pageContext: String?) -> String {
+        guard let context = pageContext else { return baseSystemPrompt }
+        return """
+        \(baseSystemPrompt)
+
+        L'utilisateur navigue actuellement sur cette page web. Utilise ce contexte pour répondre à ses questions :
+
+        \(context)
+        """
+    }
+
     static func sendMessage(
         model: AIModel,
         messages: [ChatMessage],
+        pageContext: String? = nil,
         onResponse: @escaping (String) -> Void,
         onError: @escaping (String) -> Void
     ) {
@@ -68,22 +82,24 @@ struct AIService {
             return
         }
 
+        let systemPrompt = buildSystemPrompt(pageContext: pageContext)
+
         switch model {
         case .chatgpt:
-            callOpenAI(apiKey: apiKey, model: model.modelID, messages: messages, onResponse: onResponse, onError: onError)
+            callOpenAI(apiKey: apiKey, model: model.modelID, messages: messages, systemPrompt: systemPrompt, onResponse: onResponse, onError: onError)
         case .gemini:
-            callGemini(apiKey: apiKey, model: model.modelID, messages: messages, onResponse: onResponse, onError: onError)
+            callGemini(apiKey: apiKey, model: model.modelID, messages: messages, systemPrompt: systemPrompt, onResponse: onResponse, onError: onError)
         case .claude:
-            callAnthropic(apiKey: apiKey, model: model.modelID, messages: messages, onResponse: onResponse, onError: onError)
+            callAnthropic(apiKey: apiKey, model: model.modelID, messages: messages, systemPrompt: systemPrompt, onResponse: onResponse, onError: onError)
         case .mistral:
-            callMistral(apiKey: apiKey, model: model.modelID, messages: messages, onResponse: onResponse, onError: onError)
+            callMistral(apiKey: apiKey, model: model.modelID, messages: messages, systemPrompt: systemPrompt, onResponse: onResponse, onError: onError)
         }
     }
 
     // MARK: - OpenAI (ChatGPT)
 
     private static func callOpenAI(
-        apiKey: String, model: String, messages: [ChatMessage],
+        apiKey: String, model: String, messages: [ChatMessage], systemPrompt: String,
         onResponse: @escaping (String) -> Void, onError: @escaping (String) -> Void
     ) {
         let url = URL(string: "https://api.openai.com/v1/chat/completions")!
@@ -94,7 +110,7 @@ struct AIService {
         request.timeoutInterval = 60
 
         var apiMessages: [[String: String]] = [
-            ["role": "system", "content": "Tu es un assistant intégré dans MonNavigateurPro. Tu réponds en français de manière concise et utile."]
+            ["role": "system", "content": systemPrompt]
         ]
         apiMessages += messages.map { ["role": $0.role, "content": $0.content] }
 
@@ -118,7 +134,7 @@ struct AIService {
     // MARK: - Anthropic (Claude)
 
     private static func callAnthropic(
-        apiKey: String, model: String, messages: [ChatMessage],
+        apiKey: String, model: String, messages: [ChatMessage], systemPrompt: String,
         onResponse: @escaping (String) -> Void, onError: @escaping (String) -> Void
     ) {
         let url = URL(string: "https://api.anthropic.com/v1/messages")!
@@ -134,7 +150,7 @@ struct AIService {
         let body: [String: Any] = [
             "model": model,
             "max_tokens": 4096,
-            "system": "Tu es un assistant intégré dans MonNavigateurPro. Tu réponds en français de manière concise et utile.",
+            "system": systemPrompt,
             "messages": apiMessages
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
@@ -152,7 +168,7 @@ struct AIService {
     // MARK: - Google Gemini
 
     private static func callGemini(
-        apiKey: String, model: String, messages: [ChatMessage],
+        apiKey: String, model: String, messages: [ChatMessage], systemPrompt: String,
         onResponse: @escaping (String) -> Void, onError: @escaping (String) -> Void
     ) {
         let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent?key=\(apiKey)")!
@@ -169,7 +185,7 @@ struct AIService {
         let body: [String: Any] = [
             "contents": contents,
             "systemInstruction": [
-                "parts": [["text": "Tu es un assistant intégré dans MonNavigateurPro. Tu réponds en français de manière concise et utile."]]
+                "parts": [["text": systemPrompt]]
             ]
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
@@ -188,7 +204,7 @@ struct AIService {
     // MARK: - Mistral
 
     private static func callMistral(
-        apiKey: String, model: String, messages: [ChatMessage],
+        apiKey: String, model: String, messages: [ChatMessage], systemPrompt: String,
         onResponse: @escaping (String) -> Void, onError: @escaping (String) -> Void
     ) {
         let url = URL(string: "https://api.mistral.ai/v1/chat/completions")!
@@ -199,7 +215,7 @@ struct AIService {
         request.timeoutInterval = 60
 
         var apiMessages: [[String: String]] = [
-            ["role": "system", "content": "Tu es un assistant intégré dans MonNavigateurPro. Tu réponds en français de manière concise et utile."]
+            ["role": "system", "content": systemPrompt]
         ]
         apiMessages += messages.map { ["role": $0.role, "content": $0.content] }
 

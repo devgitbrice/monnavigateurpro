@@ -194,6 +194,27 @@ class BrowserViewModel {
         createNewTab()
     }
 
+    // MARK: - Page Content Capture
+
+    func getPageContent(completion: @escaping (String?) -> Void) {
+        guard let tab = activeTab else {
+            completion(nil)
+            return
+        }
+        let title = tab.title
+        let url = tab.url?.absoluteString ?? ""
+        tab.webView.evaluateJavaScript("document.body.innerText") { result, error in
+            DispatchQueue.main.async {
+                guard let text = result as? String, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    completion(nil)
+                    return
+                }
+                let truncated = text.count > 6000 ? String(text.prefix(6000)) + "\n[... contenu tronqué]" : text
+                completion("Page: \(title)\nURL: \(url)\n\nContenu visible:\n\(truncated)")
+            }
+        }
+    }
+
     // MARK: - Helpers
 
     private func looksLikeURL(_ text: String) -> Bool {
