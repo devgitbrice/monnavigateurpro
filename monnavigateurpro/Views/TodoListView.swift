@@ -334,7 +334,9 @@ struct TodoListView: View {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         focusedTaskID = todo.id
                                     }
-                                }
+                                },
+                                onMoveToTop: { moveToTop(todo) },
+                                onMoveToBottom: { moveToBottom(todo) }
                             )
                             .draggable(todo.id.uuidString) {
                                 TodoRowView(
@@ -394,6 +396,16 @@ struct TodoListView: View {
         modelContext.delete(todo)
     }
 
+    private func moveToTop(_ todo: TodoItem) {
+        let newest = todos.compactMap({ $0.dateCreated }).max() ?? Date()
+        todo.dateCreated = newest.addingTimeInterval(1)
+    }
+
+    private func moveToBottom(_ todo: TodoItem) {
+        let oldest = todos.compactMap({ $0.dateCreated }).min() ?? Date()
+        todo.dateCreated = oldest.addingTimeInterval(-1)
+    }
+
     private func reorderTasks(from source: Int, to destination: Int) {
         var reordered = todos
         let item = reordered.remove(at: source)
@@ -412,6 +424,8 @@ struct TodoRowView: View {
     let onDelete: () -> Void
     let onFullScreen: () -> Void
     var onFocus: (() -> Void)? = nil
+    var onMoveToTop: (() -> Void)? = nil
+    var onMoveToBottom: (() -> Void)? = nil
 
     @State private var isHovering = false
     @State private var isEditing = false
@@ -484,6 +498,24 @@ struct TodoRowView: View {
             Spacer()
 
             if isHovering && !isEditing {
+                // Move to top
+                Button(action: { onMoveToTop?() }) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.blue.opacity(0.7))
+                }
+                .buttonStyle(.borderless)
+                .help("Mettre tout en haut")
+
+                // Move to bottom
+                Button(action: { onMoveToBottom?() }) {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.blue.opacity(0.7))
+                }
+                .buttonStyle(.borderless)
+                .help("Mettre tout en bas")
+
                 // Copy button
                 Button(action: {
                     ClipboardHelper.copy(todo.title)
