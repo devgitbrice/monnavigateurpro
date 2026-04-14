@@ -61,7 +61,10 @@ struct BookmarkListView: View {
     }
 
     private var labelColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.4) : Color.secondary
+        if colorScheme == .dark {
+            return Color(white: 1, opacity: 0.4)
+        }
+        return Color.secondary
     }
 
     var body: some View {
@@ -233,11 +236,13 @@ struct BookmarkRowView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private var titleColor: Color {
-        colorScheme == .dark ? Color.white : Color.primary
+        if colorScheme == .dark { return Color.white }
+        return Color.primary
     }
 
     private var urlColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.6) : Color.secondary
+        if colorScheme == .dark { return Color(white: 1, opacity: 0.6) }
+        return Color.secondary
     }
 
     var body: some View {
@@ -348,7 +353,8 @@ struct SectionHeaderView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private var nameColor: Color {
-        colorScheme == .dark ? Color.white : Color.primary
+        if colorScheme == .dark { return Color.white }
+        return Color.primary
     }
 
     var body: some View {
@@ -417,10 +423,22 @@ struct HistoryListView: View {
     let modelContext: ModelContext
     @Environment(\.colorScheme) private var colorScheme
 
-    private var titleColor: Color { colorScheme == .dark ? Color.white : Color.primary }
-    private var urlColor: Color { colorScheme == .dark ? Color.white.opacity(0.6) : Color.secondary }
-    private var iconColor: Color { colorScheme == .dark ? Color.white.opacity(0.4) : Color.secondary }
-    private var timeColor: Color { colorScheme == .dark ? Color.white.opacity(0.3) : Color.gray }
+    private var titleColor: Color {
+        if colorScheme == .dark { return Color.white }
+        return Color.primary
+    }
+    private var urlColor: Color {
+        if colorScheme == .dark { return Color(white: 1, opacity: 0.6) }
+        return Color.secondary
+    }
+    private var iconColor: Color {
+        if colorScheme == .dark { return Color(white: 1, opacity: 0.4) }
+        return Color.secondary
+    }
+    private var timeColor: Color {
+        if colorScheme == .dark { return Color(white: 1, opacity: 0.3) }
+        return Color.gray
+    }
 
     var body: some View {
         VStack(spacing: 0) {
