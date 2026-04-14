@@ -6,6 +6,8 @@ struct TodoFullScreenView: View {
     @Query(sort: [SortDescriptor(\TodoItem.dateCreated, order: .reverse)]) private var todos: [TodoItem]
     @Bindable var viewModel: BrowserViewModel
     @FocusState private var isFocused: Bool
+    @State private var isEditingTitle: Bool = false
+    @State private var editingTitle: String = ""
 
     var currentTodo: TodoItem? {
         guard viewModel.todoFullScreenIndex >= 0,
@@ -20,12 +22,35 @@ struct TodoFullScreenView: View {
                 .ignoresSafeArea()
 
             if let todo = currentTodo {
-                // Task title centered
-                Text(todo.title)
-                    .font(.system(size: 52, weight: .bold))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 80)
+                // Task title centered — tap to edit
+                if isEditingTitle {
+                    TextField("Titre de la tâche", text: $editingTitle)
+                        .font(.system(size: 52, weight: .bold))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                        .textFieldStyle(.plain)
+                        .padding(.horizontal, 80)
+                        .onSubmit {
+                            let trimmed = editingTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if !trimmed.isEmpty { todo.title = trimmed }
+                            isEditingTitle = false
+                        }
+                        #if os(macOS)
+                        .onExitCommand {
+                            isEditingTitle = false
+                        }
+                        #endif
+                } else {
+                    Text(todo.title)
+                        .font(.system(size: 52, weight: .bold))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 80)
+                        .onTapGesture(count: 2) {
+                            editingTitle = todo.title
+                            isEditingTitle = true
+                        }
+                }
 
                 // Counter top-left
                 VStack {
@@ -120,6 +145,7 @@ struct TodoFullScreenView: View {
 
     private func goToPrevious() {
         if viewModel.todoFullScreenIndex > 0 {
+            isEditingTitle = false
             withAnimation(.easeInOut(duration: 0.25)) {
                 viewModel.todoFullScreenIndex -= 1
             }
@@ -128,6 +154,7 @@ struct TodoFullScreenView: View {
 
     private func goToNext() {
         if viewModel.todoFullScreenIndex < todos.count - 1 {
+            isEditingTitle = false
             withAnimation(.easeInOut(duration: 0.25)) {
                 viewModel.todoFullScreenIndex += 1
             }

@@ -45,6 +45,7 @@ struct BookmarkListView: View {
     let bookmarks: [Bookmark]
     let viewModel: BrowserViewModel
     let modelContext: ModelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \BookmarkSection.sortOrder) private var sections: [BookmarkSection]
     @State private var editingBookmarkID: UUID? = nil
     @State private var editTitle: String = ""
@@ -132,7 +133,7 @@ struct BookmarkListView: View {
                         if !sections.isEmpty {
                             Text("Sans section")
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(colorScheme == .dark ? .white.opacity(0.4) : .tertiary)
                                 .textCase(.uppercase)
                         }
                         ForEach(unsectionedBookmarks) { bookmark in
@@ -185,11 +186,11 @@ struct BookmarkListView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(bookmark.title)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(colorScheme == .dark ? .white : .primary)
                             .lineLimit(1)
                         Text(bookmark.url)
                             .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
                             .lineLimit(1)
                     }
                 }
@@ -251,6 +252,7 @@ struct SectionHeaderView: View {
     let onStartEdit: () -> Void
     let onEndEdit: () -> Void
     let onDelete: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         if isEditing {
@@ -286,7 +288,7 @@ struct SectionHeaderView: View {
 
                 Text(section.name)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
                     .textCase(.uppercase)
 
                 Spacer()
@@ -306,6 +308,7 @@ struct HistoryListView: View {
     let history: [HistoryEntry]
     let viewModel: BrowserViewModel
     let modelContext: ModelContext
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         VStack(spacing: 0) {
@@ -346,12 +349,12 @@ struct HistoryListView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(entry.title)
                                         .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(colorScheme == .dark ? .white : .primary)
                                         .lineLimit(1)
                                     HStack {
                                         Text(entry.url)
                                             .font(.system(size: 10))
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
                                             .lineLimit(1)
                                         Spacer()
                                         Text(entry.visitDate, style: .time)
