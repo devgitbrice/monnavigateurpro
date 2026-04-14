@@ -110,40 +110,54 @@ struct BookmarkListView: View {
 
     private var bookmarkList: some View {
         List {
-            ForEach(sections) { section in
-                BookmarkSectionBlock(
-                    section: section,
-                    sectionBookmarks: bookmarksFor(section),
+            sectionsList
+            unsectionedBlock
+        }
+        .listStyle(.sidebar)
+    }
+
+    @ViewBuilder
+    private var sectionsList: some View {
+        ForEach(sections) { section in
+            BookmarkSectionBlock(
+                section: section,
+                sectionBookmarks: bookmarksFor(section),
+                viewModel: viewModel,
+                modelContext: modelContext,
+                allSections: sections,
+                editingSectionID: $editingSectionID,
+                editSectionName: $editSectionName,
+                editingBookmarkID: $editingBookmarkID,
+                editTitle: $editTitle
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var unsectionedBlock: some View {
+        if !unsectionedBookmarks.isEmpty {
+            unsectionedHeader
+            ForEach(unsectionedBookmarks) { bookmark in
+                BookmarkRowView(
+                    bookmark: bookmark,
                     viewModel: viewModel,
                     modelContext: modelContext,
-                    allSections: sections,
-                    editingSectionID: $editingSectionID,
-                    editSectionName: $editSectionName,
+                    sections: sections,
                     editingBookmarkID: $editingBookmarkID,
                     editTitle: $editTitle
                 )
             }
-
-            if !unsectionedBookmarks.isEmpty {
-                if !sections.isEmpty {
-                    Text("Sans section")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundColor(labelColor)
-                        .textCase(.uppercase)
-                }
-                ForEach(unsectionedBookmarks) { bookmark in
-                    BookmarkRowView(
-                        bookmark: bookmark,
-                        viewModel: viewModel,
-                        modelContext: modelContext,
-                        sections: sections,
-                        editingBookmarkID: $editingBookmarkID,
-                        editTitle: $editTitle
-                    )
-                }
-            }
         }
-        .listStyle(.sidebar)
+    }
+
+    @ViewBuilder
+    private var unsectionedHeader: some View {
+        if !sections.isEmpty {
+            Text("Sans section")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(labelColor)
+                .textCase(.uppercase)
+        }
     }
 
     private func addSection() {
@@ -168,8 +182,14 @@ struct BookmarkSectionBlock: View {
     @Binding var editTitle: String
 
     var body: some View {
-        sectionHeader
+        Group {
+            sectionHeader
+            sectionBookmarkRows
+        }
+    }
 
+    @ViewBuilder
+    private var sectionBookmarkRows: some View {
         ForEach(sectionBookmarks) { bookmark in
             BookmarkRowView(
                 bookmark: bookmark,
@@ -299,17 +319,31 @@ struct BookmarkRowView: View {
 
     @ViewBuilder
     private var contextMenuContent: some View {
-        Button("Ouvrir") { viewModel.openBookmark(bookmark) }
-        Button("Ouvrir dans un nouvel onglet") {
-            openInNewTab()
-        }
+        openButtons
         Divider()
+        editButton
+        Divider()
+        moveMenu
+        deleteButton
+    }
+
+    private var openButtons: some View {
+        Group {
+            Button("Ouvrir") { viewModel.openBookmark(bookmark) }
+            Button("Ouvrir dans un nouvel onglet") {
+                openInNewTab()
+            }
+        }
+    }
+
+    private var editButton: some View {
         Button("Modifier") {
             editTitle = bookmark.title
             editingBookmarkID = bookmark.id
         }
-        Divider()
-        moveMenu
+    }
+
+    private var deleteButton: some View {
         Button("Supprimer", role: .destructive) {
             viewModel.deleteBookmark(bookmark, modelContext: modelContext)
         }
