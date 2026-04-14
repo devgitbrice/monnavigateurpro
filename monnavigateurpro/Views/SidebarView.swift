@@ -133,7 +133,7 @@ struct BookmarkListView: View {
                         if !sections.isEmpty {
                             Text("Sans section")
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(colorScheme == .dark ? .white.opacity(0.4) : .tertiary)
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.4) : .secondary)
                                 .textCase(.uppercase)
                         }
                         ForEach(unsectionedBookmarks) { bookmark in
@@ -178,25 +178,23 @@ struct BookmarkListView: View {
                 .buttonStyle(.borderless)
             }
         } else {
-            Button(action: { viewModel.openBookmark(bookmark) }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.yellow)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(bookmark.title)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(colorScheme == .dark ? .white : .primary)
-                            .lineLimit(1)
-                        Text(bookmark.url)
-                            .font(.system(size: 10))
-                            .foregroundStyle(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
-                            .lineLimit(1)
-                    }
+            HStack(spacing: 8) {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(.yellow)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(bookmark.title)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(colorScheme == .dark ? .white : .primary)
+                        .lineLimit(1)
+                    Text(bookmark.url)
+                        .font(.system(size: 10))
+                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
+                        .lineLimit(1)
                 }
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.borderless)
+            .contentShape(Rectangle())
+            .onTapGesture { viewModel.openBookmark(bookmark) }
             .contextMenu {
                 Button("Ouvrir") { viewModel.openBookmark(bookmark) }
                 Button("Ouvrir dans un nouvel onglet") {
@@ -288,7 +286,7 @@ struct SectionHeaderView: View {
 
                 Text(section.name)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
+                    .foregroundColor(colorScheme == .dark ? .white : .primary)
                     .textCase(.uppercase)
 
                 Spacer()
@@ -340,32 +338,30 @@ struct HistoryListView: View {
             } else {
                 List {
                     ForEach(history) { entry in
-                        Button(action: { viewModel.openHistoryEntry(entry) }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "clock")
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(.secondary)
+                        HStack(spacing: 8) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 11))
+                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.4) : .secondary)
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(entry.title)
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(colorScheme == .dark ? .white : .primary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(entry.title)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(colorScheme == .dark ? .white : .primary)
+                                    .lineLimit(1)
+                                HStack {
+                                    Text(entry.url)
+                                        .font(.system(size: 10))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
                                         .lineLimit(1)
-                                    HStack {
-                                        Text(entry.url)
-                                            .font(.system(size: 10))
-                                            .foregroundStyle(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
-                                            .lineLimit(1)
-                                        Spacer()
-                                        Text(entry.visitDate, style: .time)
-                                            .font(.system(size: 9))
-                                            .foregroundStyle(.tertiary)
-                                    }
+                                    Spacer()
+                                    Text(entry.visitDate, style: .time)
+                                        .font(.system(size: 9))
+                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.3) : .tertiary)
                                 }
                             }
-                            .contentShape(Rectangle())
                         }
-                        .buttonStyle(.borderless)
+                        .contentShape(Rectangle())
+                        .onTapGesture { viewModel.openHistoryEntry(entry) }
                         .contextMenu {
                             Button("Ouvrir") { viewModel.openHistoryEntry(entry) }
                             Button("Ouvrir dans un nouvel onglet") {
