@@ -52,12 +52,16 @@ struct BookmarkListView: View {
     @State private var editingSectionID: UUID? = nil
     @State private var editSectionName: String = ""
 
-    private func bookmarks(for section: BookmarkSection) -> [Bookmark] {
+    private func bookmarksFor(_ section: BookmarkSection) -> [Bookmark] {
         bookmarks.filter { $0.sectionID == section.id }
     }
 
     private var unsectionedBookmarks: [Bookmark] {
         bookmarks.filter { $0.sectionID == nil }
+    }
+
+    private var labelColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.4) : Color.secondary
     }
 
     var body: some View {
@@ -104,18 +108,78 @@ struct BookmarkListView: View {
     private var bookmarkList: some View {
         List {
             ForEach(sections) { section in
-                sectionBlock(section)
+                BookmarkSectionBlock(
+                    section: section,
+                    sectionBookmarks: bookmarksFor(section),
+                    viewModel: viewModel,
+                    modelContext: modelContext,
+                    allSections: sections,
+                    editingSectionID: $editingSectionID,
+                    editSectionName: $editSectionName,
+                    editingBookmarkID: $editingBookmarkID,
+                    editTitle: $editTitle
+                )
             }
 
             if !unsectionedBookmarks.isEmpty {
-                unsectionedBlock
+                if !sections.isEmpty {
+                    Text("Sans section")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(labelColor)
+                        .textCase(.uppercase)
+                }
+                ForEach(unsectionedBookmarks) { bookmark in
+                    BookmarkRowView(
+                        bookmark: bookmark,
+                        viewModel: viewModel,
+                        modelContext: modelContext,
+                        sections: sections,
+                        editingBookmarkID: $editingBookmarkID,
+                        editTitle: $editTitle
+                    )
+                }
             }
         }
         .listStyle(.sidebar)
     }
 
-    @ViewBuilder
-    private func sectionBlock(_ section: BookmarkSection) -> some View {
+    private func addSection() {
+        let section = BookmarkSection(name: "Nouvelle section", sortOrder: sections.count)
+        modelContext.insert(section)
+        editSectionName = section.name
+        editingSectionID = section.id
+    }
+}
+
+// MARK: - BookmarkSectionBlock
+
+struct BookmarkSectionBlock: View {
+    let section: BookmarkSection
+    let sectionBookmarks: [Bookmark]
+    let viewModel: BrowserViewModel
+    let modelContext: ModelContext
+    let allSections: [BookmarkSection]
+    @Binding var editingSectionID: UUID?
+    @Binding var editSectionName: String
+    @Binding var editingBookmarkID: UUID?
+    @Binding var editTitle: String
+
+    var body: some View {
+        sectionHeader
+
+        ForEach(sectionBookmarks) { bookmark in
+            BookmarkRowView(
+                bookmark: bookmark,
+                viewModel: viewModel,
+                modelContext: modelContext,
+                sections: allSections,
+                editingBookmarkID: $editingBookmarkID,
+                editTitle: $editTitle
+            )
+        }
+    }
+
+    private var sectionHeader: some View {
         SectionHeaderView(
             section: section,
             isEditing: editingSectionID == section.id,
@@ -138,65 +202,26 @@ struct BookmarkListView: View {
                 .opacity(0.8)
         }
         .dropDestination(for: String.self) { items, _ in
-            guard let droppedID = items.first.flatMap({ UUID(uuidString: $0) }),
-                  let fromIndex = sections.firstIndex(where: { $0.id == droppedID }),
-                  let toIndex = sections.firstIndex(where: { $0.id == section.id }),
-                  fromIndex != toIndex else { return false }
-            reorderSections(from: fromIndex, to: toIndex)
-            return true
-        }
-
-        ForEach(bookmarks(for: section)) { bookmark in
-            BookmarkRowView(
-                bookmark: bookmark,
-                viewModel: viewModel,
-                modelContext: modelContext,
-                sections: sections,
-                editingBookmarkID: $editingBookmarkID,
-                editTitle: $editTitle
-            )
+            handleDrop(items)
         }
     }
 
-    @ViewBuilder
-    private var unsectionedBlock: some View {
-        if !sections.isEmpty {
-            let color: Color = colorScheme == .dark ? Color.white.opacity(0.4) : Color.secondary
-            Text("Sans section")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(color)
-                .textCase(.uppercase)
+    private func handleDrop(_ items: [String]) -> Bool {
+        guard let droppedID = items.first.flatMap({ UUID(uuidString: $0) }),
+              let fromIndex = allSections.firstIndex(where: { $0.id == droppedID }),
+              let toIndex = allSections.firstIndex(where: { $0.id == section.id }),
+              fromIndex != toIndex else { return false }
+        var reordered = allSections
+        let item = reordered.remove(at: fromIndex)
+        reordered.insert(item, at: toIndex)
+        for (index, s) in reordered.enumerated() {
+            s.sortOrder = index
         }
-        ForEach(unsectionedBookmarks) { bookmark in
-            BookmarkRowView(
-                bookmark: bookmark,
-                viewModel: viewModel,
-                modelContext: modelContext,
-                sections: sections,
-                editingBookmarkID: $editingBookmarkID,
-                editTitle: $editTitle
-            )
-        }
-    }
-
-    private func addSection() {
-        let section = BookmarkSection(name: "Nouvelle section", sortOrder: sections.count)
-        modelContext.insert(section)
-        editSectionName = section.name
-        editingSectionID = section.id
-    }
-
-    private func reorderSections(from source: Int, to destination: Int) {
-        var reordered = sections
-        let item = reordered.remove(at: source)
-        reordered.insert(item, at: destination)
-        for (index, section) in reordered.enumerated() {
-            section.sortOrder = index
-        }
+        return true
     }
 }
 
-// MARK: - BookmarkRowView (extracted)
+// MARK: - BookmarkRowView
 
 struct BookmarkRowView: View {
     let bookmark: Bookmark
@@ -208,7 +233,7 @@ struct BookmarkRowView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private var titleColor: Color {
-        colorScheme == .dark ? .white : Color.primary
+        colorScheme == .dark ? Color.white : Color.primary
     }
 
     private var urlColor: Color {
@@ -264,16 +289,14 @@ struct BookmarkRowView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { viewModel.openBookmark(bookmark) }
-        .contextMenu { rowContextMenu }
+        .contextMenu { contextMenuContent }
     }
 
     @ViewBuilder
-    private var rowContextMenu: some View {
+    private var contextMenuContent: some View {
         Button("Ouvrir") { viewModel.openBookmark(bookmark) }
         Button("Ouvrir dans un nouvel onglet") {
-            if let url = URL(string: bookmark.url) {
-                viewModel.createNewTab(url: url)
-            }
+            openInNewTab()
         }
         Divider()
         Button("Modifier") {
@@ -281,18 +304,28 @@ struct BookmarkRowView: View {
             editingBookmarkID = bookmark.id
         }
         Divider()
+        moveMenu
+        Button("Supprimer", role: .destructive) {
+            viewModel.deleteBookmark(bookmark, modelContext: modelContext)
+        }
+    }
+
+    @ViewBuilder
+    private var moveMenu: some View {
         if !sections.isEmpty {
             Menu("Déplacer vers") {
                 Button("Sans section") { bookmark.sectionID = nil }
-                Divider()
                 ForEach(sections) { section in
                     Button(section.name) { bookmark.sectionID = section.id }
                 }
             }
             Divider()
         }
-        Button("Supprimer", role: .destructive) {
-            viewModel.deleteBookmark(bookmark, modelContext: modelContext)
+    }
+
+    private func openInNewTab() {
+        if let url = URL(string: bookmark.url) {
+            viewModel.createNewTab(url: url)
         }
     }
 
@@ -315,7 +348,7 @@ struct SectionHeaderView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private var nameColor: Color {
-        colorScheme == .dark ? .white : Color.primary
+        colorScheme == .dark ? Color.white : Color.primary
     }
 
     var body: some View {
@@ -384,7 +417,7 @@ struct HistoryListView: View {
     let modelContext: ModelContext
     @Environment(\.colorScheme) private var colorScheme
 
-    private var titleColor: Color { colorScheme == .dark ? .white : Color.primary }
+    private var titleColor: Color { colorScheme == .dark ? Color.white : Color.primary }
     private var urlColor: Color { colorScheme == .dark ? Color.white.opacity(0.6) : Color.secondary }
     private var iconColor: Color { colorScheme == .dark ? Color.white.opacity(0.4) : Color.secondary }
     private var timeColor: Color { colorScheme == .dark ? Color.white.opacity(0.3) : Color.gray }
@@ -394,7 +427,6 @@ struct HistoryListView: View {
             if !history.isEmpty {
                 clearButton
             }
-
             if history.isEmpty {
                 emptyState
             } else {
@@ -447,7 +479,7 @@ struct HistoryListView: View {
     }
 }
 
-// MARK: - HistoryRowView (extracted)
+// MARK: - HistoryRowView
 
 struct HistoryRowView: View {
     let entry: HistoryEntry
@@ -462,33 +494,40 @@ struct HistoryRowView: View {
             Image(systemName: "clock")
                 .font(.system(size: 11))
                 .foregroundColor(iconColor)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(entry.title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(titleColor)
-                    .lineLimit(1)
-                HStack {
-                    Text(entry.url)
-                        .font(.system(size: 10))
-                        .foregroundColor(urlColor)
-                        .lineLimit(1)
-                    Spacer()
-                    Text(entry.visitDate, style: .time)
-                        .font(.system(size: 9))
-                        .foregroundColor(timeColor)
-                }
-            }
+            entryDetails
         }
         .contentShape(Rectangle())
         .onTapGesture { viewModel.openHistoryEntry(entry) }
         .contextMenu {
             Button("Ouvrir") { viewModel.openHistoryEntry(entry) }
             Button("Ouvrir dans un nouvel onglet") {
-                if let url = URL(string: entry.url) {
-                    viewModel.createNewTab(url: url)
-                }
+                openInNewTab()
             }
+        }
+    }
+
+    private var entryDetails: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(entry.title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(titleColor)
+                .lineLimit(1)
+            HStack {
+                Text(entry.url)
+                    .font(.system(size: 10))
+                    .foregroundColor(urlColor)
+                    .lineLimit(1)
+                Spacer()
+                Text(entry.visitDate, style: .time)
+                    .font(.system(size: 9))
+                    .foregroundColor(timeColor)
+            }
+        }
+    }
+
+    private func openInNewTab() {
+        if let url = URL(string: entry.url) {
+            viewModel.createNewTab(url: url)
         }
     }
 }
