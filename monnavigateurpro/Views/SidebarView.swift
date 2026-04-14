@@ -60,6 +60,11 @@ struct BookmarkListView: View {
         bookmarks.filter { $0.sectionID == nil }
     }
 
+    private var isDark: Bool { colorScheme == .dark }
+    private var titleColor: Color { isDark ? .white : Color.primary }
+    private var subtitleColor: Color { isDark ? Color.white.opacity(0.6) : Color.secondary }
+    private var labelColor: Color { isDark ? Color.white.opacity(0.4) : Color.secondary }
+
     var body: some View {
         VStack(spacing: 0) {
             // Add section button
@@ -133,7 +138,7 @@ struct BookmarkListView: View {
                         if !sections.isEmpty {
                             Text("Sans section")
                                 .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.4) : .secondary)
+                                .foregroundColor(labelColor)
                                 .textCase(.uppercase)
                         }
                         ForEach(unsectionedBookmarks) { bookmark in
@@ -185,11 +190,11 @@ struct BookmarkListView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(bookmark.title)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(colorScheme == .dark ? .white : .primary)
+                        .foregroundColor(titleColor)
                         .lineLimit(1)
                     Text(bookmark.url)
                         .font(.system(size: 10))
-                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
+                        .foregroundColor(subtitleColor)
                         .lineLimit(1)
                 }
             }
@@ -251,6 +256,7 @@ struct SectionHeaderView: View {
     let onEndEdit: () -> Void
     let onDelete: () -> Void
     @Environment(\.colorScheme) private var colorScheme
+    private var sectionNameColor: Color { colorScheme == .dark ? .white : Color.primary }
 
     var body: some View {
         if isEditing {
@@ -286,7 +292,7 @@ struct SectionHeaderView: View {
 
                 Text(section.name)
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(colorScheme == .dark ? .white : .primary)
+                    .foregroundColor(sectionNameColor)
                     .textCase(.uppercase)
 
                 Spacer()
@@ -307,6 +313,10 @@ struct HistoryListView: View {
     let viewModel: BrowserViewModel
     let modelContext: ModelContext
     @Environment(\.colorScheme) private var colorScheme
+    private var histTitleColor: Color { colorScheme == .dark ? .white : Color.primary }
+    private var histSubtitleColor: Color { colorScheme == .dark ? Color.white.opacity(0.6) : Color.secondary }
+    private var histIconColor: Color { colorScheme == .dark ? Color.white.opacity(0.4) : Color.secondary }
+    private var histTimeColor: Color { colorScheme == .dark ? Color.white.opacity(0.3) : Color.gray }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -341,22 +351,22 @@ struct HistoryListView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "clock")
                                 .font(.system(size: 11))
-                                .foregroundColor(colorScheme == .dark ? .white.opacity(0.4) : .secondary)
+                                .foregroundColor(histIconColor)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(entry.title)
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(colorScheme == .dark ? .white : .primary)
+                                    .foregroundColor(histTitleColor)
                                     .lineLimit(1)
                                 HStack {
                                     Text(entry.url)
                                         .font(.system(size: 10))
-                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.6) : .secondary)
+                                        .foregroundColor(histSubtitleColor)
                                         .lineLimit(1)
                                     Spacer()
                                     Text(entry.visitDate, style: .time)
                                         .font(.system(size: 9))
-                                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.3) : .tertiary)
+                                        .foregroundColor(histTimeColor)
                                 }
                             }
                         }
